@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: pravah_postgres
+    environment:
+      POSTGRES_USER: pravah_user
+      POSTGRES_PASSWORD: pravah_password
+      POSTGRES_DB: pravah_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pravah_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pravah_backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://pravah_user:pravah_password@postgres:5432/pravah_db
+      API_BASE_URL: http://localhost:8000
+      ALLOWED_ORIGINS: http://localhost:8080,http://localhost:5173
+      DATA_PATH: /app/data
+    volumes:
+      - ./backend:/app
+      - ./public/extracted_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # React Frontend (for production)
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.frontend
+  #   container_name: pravah_frontend
+  #   ports:
+  #     - "8080:80"
+  #   depends_on:
+  #     - backend
+
+volumes:
+  postgres_data:
