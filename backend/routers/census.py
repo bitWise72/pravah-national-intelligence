@@ -1,7 +1,3 @@
-"""
-Census API Router
-Provides calibrated population estimates with confidence intervals.
-"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -14,29 +10,20 @@ from services.privacy_enforcer import privacy_enforcer
 
 router = APIRouter()
 
-
 @router.get("/census/calibrated", response_model=CalibratedCensusResponse)
 async def get_calibrated_census(
     pincode: str = Query(..., description="6-digit pincode"),
     db: Session = Depends(get_db)
 ):
-    """
-    Get calibrated population estimates for a pincode.
-    
-    Returns census baseline, Aadhaar proxy counts, and calibrated estimates
-    with confidence intervals. Data is suppressed if population < 10.
-    """
-    # Query risk zone data (contains calibrated population)
     risk_zone = db.query(RiskZone).filter(RiskZone.pincode == pincode).first()
-    
+
     if not risk_zone:
         raise HTTPException(status_code=404, detail=f"Pincode {pincode} not found")
-    
-    # Build response
+
     response_data = {
         "pincode": risk_zone.pincode,
         "census_baseline": risk_zone.population,
-        "aadhaar_proxy": risk_zone.population,  # Simplified - would use actual Aadhaar counts
+        "aadhaar_proxy": risk_zone.population,
         "calibrated_population": risk_zone.calibrated_population,
         "lower_ci": risk_zone.lower_ci,
         "upper_ci": risk_zone.upper_ci,
@@ -44,8 +31,7 @@ async def get_calibrated_census(
         "suppressed": risk_zone.is_suppressed,
         "suppression_reason": risk_zone.suppression_reason
     }
-    
-    # Apply privacy enforcement
+
     if privacy_enforcer.should_suppress(risk_zone.population):
         response_data.update({
             "census_baseline": None,
@@ -56,5 +42,5 @@ async def get_calibrated_census(
             "suppressed": True,
             "suppression_reason": f"Data suppressed for privacy (n<{privacy_enforcer.minimum_cell_size})"
         })
-    
+
     return CalibratedCensusResponse(**response_data)

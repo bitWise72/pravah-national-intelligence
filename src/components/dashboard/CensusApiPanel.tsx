@@ -96,7 +96,6 @@ const CensusApiPanel = () => {
       animate={{ opacity: 1 }}
       className="space-y-6"
     >
-      {/* Header */}
       <div className="glass-card p-6">
         <div className="flex items-start justify-between">
           <div>
@@ -114,7 +113,7 @@ const CensusApiPanel = () => {
 
         <div className="mt-6 flex items-center gap-4">
           <code className="px-4 py-2 bg-secondary rounded-lg text-sm font-mono text-foreground">
-            Base URL: <span className="text-muted-foreground">{import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}</span>
+            Base URL: <span className="text-muted-foreground">{import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}</span>
           </code>
           <Button variant="outline" size="sm" className="gap-2">
             <ExternalLink className="w-4 h-4" aria-hidden="true" />
@@ -123,7 +122,6 @@ const CensusApiPanel = () => {
         </div>
       </div>
 
-      {/* Endpoints */}
       <div className="space-y-4">
         {endpoints.map((endpoint, index) => (
           <motion.div
@@ -172,7 +170,6 @@ const CensusApiPanel = () => {
         ))}
       </div>
 
-      {/* Usage Note */}
       <div className="glass-card p-5 border-primary/20">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">

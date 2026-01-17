@@ -6,22 +6,10 @@
             "use": "@vercel/python"
         }
     ],
-    "routes": [
+    "rewrites": [
         {
-            "src": "/(.*)",
-            "dest": "main.py"
+            "source": "/(.*)",
+            "destination": "/main.py"
         }
-    ],
-    "env": {
-        "DATABASE_URL": "@database_url",
-        "API_SECRET_KEY": "@api_secret_key",
-        "ALLOWED_ORIGINS": "@allowed_origins",
-        "POSTAL_API_URL": "https://api.postalpincode.in",
-        "MINIMUM_CELL_SIZE": "10",
-        "RATE_LIMIT_PER_MINUTE": "60",
-        "ENABLE_AUDIT_LOG": "true",
-        "LOG_LEVEL": "INFO",
-        "DEBUG": "false",
-        "RELOAD": "false"
-    }
+    ]
 }

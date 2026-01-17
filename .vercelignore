@@ -1,8 +1,12 @@
 node_modules
-.DS_Store
 dist
 dist-ssr
 *.local
 .env
 .env.local
 .env.*.local
+public/extracted_data
+public/*.zip
+*.db
+*.sqlite
+

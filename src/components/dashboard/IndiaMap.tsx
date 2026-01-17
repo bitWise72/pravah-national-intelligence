@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { riskZones, RiskZone } from '@/data/mockData';
+import { RiskZone } from '@/types';
 import RiskBadge from './RiskBadge';
 import { useState } from 'react';
 import { X, MapPin, TrendingUp, Fingerprint, Wifi } from 'lucide-react';
@@ -14,30 +14,30 @@ const getRiskColor = (level: string): string => {
   return colors[level] || '#6b7280';
 };
 
-// Convert lat/long to approximate SVG coordinates for India
 const latLongToSvg = (lat: number, lng: number): { x: number; y: number } => {
-  // India bounds approximately: lat 8-37, lng 68-97
+
   const minLat = 6, maxLat = 38;
   const minLng = 66, maxLng = 98;
-  
+
   const x = ((lng - minLng) / (maxLng - minLng)) * 400 + 50;
   const y = ((maxLat - lat) / (maxLat - minLat)) * 450 + 25;
-  
+
   return { x, y };
 };
 
 interface IndiaMapProps {
+  zones: RiskZone[];
   onZoneSelect?: (zone: RiskZone) => void;
   selectedZone?: RiskZone | null;
   filterLevel?: string;
 }
 
-const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapProps) => {
+const IndiaMap = ({ zones, onZoneSelect, selectedZone = null, filterLevel }: IndiaMapProps) => {
   const [hoveredZone, setHoveredZone] = useState<RiskZone | null>(null);
-  
+
   const filteredZones = filterLevel && filterLevel !== 'all'
-    ? riskZones.filter(z => z.riskLevel === filterLevel)
-    : riskZones;
+    ? zones.filter(z => z.riskLevel === filterLevel)
+    : zones;
 
   return (
     <motion.div
@@ -57,24 +57,24 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
       >
         <title>PRAVAH India Risk Zone Map</title>
         <desc>Interactive map displaying demographic risk zones across India with color-coded severity levels</desc>
-        
-        {/* Background Grid */}
+
+        { }
         <defs>
           <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse">
             <path d="M 25 0 L 0 0 0 25" fill="none" stroke="hsl(215, 28%, 17%)" strokeWidth="0.5" opacity="0.3" />
           </pattern>
           <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
             <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
-        
+
         <rect width="100%" height="100%" fill="url(#grid)" aria-hidden="true" />
-        
-        {/* India Outline (simplified) */}
+
+        { }
         <path
           d="M 150 80 
              C 180 60, 280 50, 320 70
@@ -93,17 +93,17 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
           opacity="0.6"
           aria-hidden="true"
         />
-        
-        {/* Risk Zone Markers */}
+
+        { }
         {filteredZones.map((zone) => {
           const { x, y } = latLongToSvg(zone.latitude, zone.longitude);
           const isSelected = selectedZone?.id === zone.id;
           const isHovered = hoveredZone?.id === zone.id;
           const radius = 6 + zone.riskScore * 12;
-          
+
           return (
             <g key={zone.id}>
-              {/* Pulse animation for critical zones */}
+              { }
               {zone.riskLevel === 'critical' && (
                 <circle
                   cx={x}
@@ -115,8 +115,8 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
                   style={{ transformOrigin: `${x}px ${y}px` }}
                 />
               )}
-              
-              {/* Outer glow */}
+
+              { }
               <circle
                 cx={x}
                 cy={y}
@@ -125,8 +125,8 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
                 opacity={isSelected || isHovered ? 0.4 : 0.2}
                 filter="url(#glow)"
               />
-              
-              {/* Main marker */}
+
+              { }
               <motion.circle
                 cx={x}
                 cy={y}
@@ -149,8 +149,8 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
                 tabIndex={0}
                 aria-label={`${zone.district}, ${zone.state}: ${zone.riskLevel} risk, score ${(zone.riskScore * 100).toFixed(0)}%`}
               />
-              
-              {/* Label for hovered/selected */}
+
+              { }
               {(isHovered || isSelected) && (
                 <text
                   x={x}
@@ -166,8 +166,8 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
             </g>
           );
         })}
-        
-        {/* Legend */}
+
+        { }
         <g transform="translate(20, 420)">
           <text fill="hsl(215, 20%, 55%)" fontSize="10" fontWeight="500">Risk Level</text>
           {[
@@ -183,8 +183,8 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
           ))}
         </g>
       </svg>
-      
-      {/* Zone Detail Panel */}
+
+      { }
       {(hoveredZone || selectedZone) && (
         <motion.div
           initial={{ opacity: 0, x: 20 }}
@@ -198,7 +198,7 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
             </div>
             <RiskBadge level={(hoveredZone || selectedZone)?.riskLevel || 'low'} showPulse={(hoveredZone || selectedZone)?.anomalyFlag} />
           </div>
-          
+
           <div className="space-y-2 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground flex items-center gap-1">
@@ -215,7 +215,7 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
               <span className="text-foreground font-medium">{(((hoveredZone || selectedZone)?.riskScore || 0) * 100).toFixed(1)}%</span>
             </div>
           </div>
-          
+
           <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground flex items-center gap-1">
@@ -236,7 +236,7 @@ const IndiaMap = ({ onZoneSelect, selectedZone = null, filterLevel }: IndiaMapPr
               <span className="text-foreground">{(((hoveredZone || selectedZone)?.digitalExclusion || 0) * 100).toFixed(0)}%</span>
             </div>
           </div>
-          
+
           {(hoveredZone || selectedZone)?.anomalyFlag && (
             <div className="mt-3 px-2 py-1.5 bg-destructive/20 rounded text-xs text-destructive flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />

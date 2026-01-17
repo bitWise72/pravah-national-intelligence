@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: pravah-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: DEBUG
+        value: "false"
+      - key: RELOAD
+        value: "false"
+      - key: LOG_LEVEL
+        value: "INFO"

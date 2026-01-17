@@ -3,7 +3,6 @@ import * as RechartsPrimitive from "recharts";
 
 import { cn } from "@/lib/utils";
 
-// Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
 
 export type ChartConfig = {
@@ -58,16 +57,14 @@ const ChartContainer = React.forwardRef<
 });
 ChartContainer.displayName = "Chart";
 
-// Sanitize CSS values to prevent XSS - only allow valid CSS color values
 const sanitizeCSSValue = (value: string): string => {
-  // Allow only safe CSS color formats: hex, rgb, rgba, hsl, hsla, named colors
+
   const safeColorPattern = /^(#[0-9a-fA-F]{3,8}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)|hsl\(\s*[\d.]+\s*,\s*[\d.]+%?\s*,\s*[\d.]+%?\s*\)|hsla\(\s*[\d.]+\s*,\s*[\d.]+%?\s*,\s*[\d.]+%?\s*,\s*[\d.]+\s*\)|[a-zA-Z]+)$/;
   return safeColorPattern.test(value.trim()) ? value.trim() : '';
 };
 
-// Sanitize CSS selector parts
 const sanitizeSelector = (value: string): string => {
-  // Only allow alphanumeric, hyphens, and underscores
+
   return value.replace(/[^a-zA-Z0-9_-]/g, '');
 };
 
@@ -78,7 +75,6 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  // Build CSS string with sanitized values
   const cssContent = Object.entries(THEMES)
     .map(([theme, prefix]) => {
       const sanitizedPrefix = prefix ? sanitizeSelector(prefix) : '';
@@ -92,7 +88,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
         })
         .filter(Boolean)
         .join('\n');
-      
+
       return `${sanitizedPrefix} [data-chart=${sanitizedId}] {\n${cssVars}\n}`;
     })
     .join('\n');
@@ -287,7 +283,6 @@ const ChartLegendContent = React.forwardRef<
 });
 ChartLegendContent.displayName = "ChartLegend";
 
-// Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key: string) {
   if (typeof payload !== "object" || payload === null) {
     return undefined;

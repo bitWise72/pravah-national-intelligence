@@ -1,7 +1,3 @@
-"""
-Anomalies API Router
-Provides detected anomalies from Isolation Forest model.
-"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -13,24 +9,16 @@ from schemas import AnomalyResponse
 
 router = APIRouter()
 
-
 @router.get("/anomalies", response_model=List[AnomalyResponse])
 async def get_anomalies(
     limit: int = Query(50, ge=1, le=200, description="Maximum number of results"),
     db: Session = Depends(get_db)
 ):
-    """
-    Get list of detected anomalies.
-    
-    Returns zones flagged by anomaly detection algorithm,
-    ordered by anomaly score (most anomalous first).
-    """
-    # Query zones with anomaly flag
     anomalies = db.query(RiskZone).filter(
         RiskZone.anomaly_flag == True,
         RiskZone.is_suppressed == False
     ).order_by(RiskZone.anomaly_score.desc()).limit(limit).all()
-    
+
     results = []
     for zone in anomalies:
         results.append(AnomalyResponse(
@@ -42,21 +30,19 @@ async def get_anomalies(
             suppressed=zone.is_suppressed,
             suppression_reason=zone.suppression_reason
         ))
-    
-    return results
 
+    return results
 
 @router.get("/anomalies/{pincode}", response_model=AnomalyResponse)
 async def get_anomaly_by_pincode(
     pincode: str,
     db: Session = Depends(get_db)
 ):
-    """Get anomaly status for a specific pincode."""
     risk_zone = db.query(RiskZone).filter(RiskZone.pincode == pincode).first()
-    
+
     if not risk_zone:
         raise HTTPException(status_code=404, detail=f"Pincode {pincode} not found")
-    
+
     return AnomalyResponse(
         pincode=risk_zone.pincode,
         anomaly_flag=risk_zone.anomaly_flag,

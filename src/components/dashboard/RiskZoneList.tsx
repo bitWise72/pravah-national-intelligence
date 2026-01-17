@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { MapPin, AlertTriangle, TrendingUp, Fingerprint, Wifi } from 'lucide-react';
-import { RiskZone } from '@/data/mockData';
+import { RiskZone } from '@/types';
 import RiskBadge from './RiskBadge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -24,7 +24,7 @@ const RiskZoneList = ({ zones, selectedZone, onZoneSelect }: RiskZoneListProps) 
           Sorted by risk score
         </p>
       </div>
-      
+
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-2">
           {sortedZones.map((zone, index) => (
@@ -34,11 +34,10 @@ const RiskZoneList = ({ zones, selectedZone, onZoneSelect }: RiskZoneListProps) 
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => onZoneSelect(zone)}
-              className={`w-full text-left p-3 rounded-lg border transition-all duration-200 ${
-                selectedZone?.id === zone.id
+              className={`w-full text-left p-3 rounded-lg border transition-all duration-200 ${selectedZone?.id === zone.id
                   ? 'bg-primary/10 border-primary/30'
                   : 'bg-card/50 border-border/30 hover:bg-secondary/50 hover:border-border'
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
@@ -47,7 +46,7 @@ const RiskZoneList = ({ zones, selectedZone, onZoneSelect }: RiskZoneListProps) 
                 </div>
                 <RiskBadge level={zone.riskLevel} showPulse={zone.anomalyFlag} />
               </div>
-              
+
               <div className="flex items-center gap-3 mt-3">
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <TrendingUp className="w-3 h-3" />

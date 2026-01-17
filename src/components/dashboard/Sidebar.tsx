@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  Map, 
-  TrendingUp, 
-  ShieldAlert, 
-  Fingerprint, 
+import {
+  LayoutDashboard,
+  Map,
+  TrendingUp,
+  ShieldAlert,
+  Fingerprint,
   Wifi,
   Database,
   AlertTriangle,
@@ -35,7 +35,6 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="fixed left-0 top-0 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col z-50"
     >
-      {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center glow-effect">
@@ -48,7 +47,6 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
         <p className="text-xs text-muted-foreground uppercase tracking-wider px-3 mb-3">
           Dashboard
@@ -56,18 +54,17 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
-          
+
           return (
             <motion.button
               key={item.id}
               onClick={() => onTabChange(item.id)}
               whileHover={{ x: 4 }}
               whileTap={{ scale: 0.98 }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
                   ? 'bg-primary/10 text-primary border border-primary/20'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-              }`}
+                }`}
             >
               <Icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
               {item.label}
@@ -82,7 +79,6 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="p-4 border-t border-sidebar-border space-y-1">
         <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-sidebar-accent transition-colors">
           <Settings className="w-5 h-5" />
@@ -94,7 +90,6 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
         </button>
       </div>
 
-      {/* Status Indicator */}
       <div className="p-4 border-t border-sidebar-border">
         <div className="glass-card p-3">
           <div className="flex items-center gap-2 mb-2">

@@ -1,10 +1,7 @@
-"""
-Risk Zones API Router
-Provides high-risk zones with composite risk scores.
-"""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from sqlalchemy import func
+from typing import List, Optional, Dict, Any
 
 from database import get_db
 from models.risk_zones import RiskZone, RiskLevel
@@ -13,6 +10,39 @@ from services.privacy_enforcer import privacy_enforcer
 
 router = APIRouter()
 
+@router.get("/stats/national")
+async def get_national_stats(db: Session = Depends(get_db)) -> Dict[str, Any]:
+    total_pop = db.query(func.sum(RiskZone.population)).scalar() or 0
+    total_zones = db.query(func.count(RiskZone.id)).scalar() or 0
+    
+    critical = db.query(func.count(RiskZone.id)).filter(RiskZone.risk_level == 'critical').scalar() or 0
+    high = db.query(func.count(RiskZone.id)).filter(RiskZone.risk_level == 'high').scalar() or 0
+    medium = db.query(func.count(RiskZone.id)).filter(RiskZone.risk_level == 'medium').scalar() or 0
+    low = db.query(func.count(RiskZone.id)).filter(RiskZone.risk_level == 'low').scalar() or 0
+
+    avg_mig = db.query(func.avg(RiskZone.migration_velocity)).scalar() or 0
+    avg_bio = db.query(func.avg(RiskZone.biometric_risk)).scalar() or 0
+    avg_dig = db.query(func.avg(RiskZone.digital_exclusion)).scalar() or 0
+    
+    anomalies = db.query(func.count(RiskZone.id)).filter(RiskZone.anomaly_flag == True).scalar() or 0
+
+    return {
+        "total_population": total_pop,
+        "calibrated_population": 1_410_000_000, 
+        "total_zones": total_zones,
+        "risk_counts": {
+            "critical": critical,
+            "high": high,
+            "medium": medium,
+            "low": low
+        },
+        "averages": {
+            "migration": float(avg_mig),
+            "biometric": float(avg_bio),
+            "digital": float(avg_dig)
+        },
+        "anomalies": anomalies
+    }
 
 @router.get("/risk-zones", response_model=List[RiskZoneResponse])
 async def get_risk_zones(
@@ -21,31 +51,20 @@ async def get_risk_zones(
     limit: int = Query(100, ge=1, le=500, description="Maximum number of results"),
     db: Session = Depends(get_db)
 ):
-    """
-    Get list of risk zones with composite risk scores.
-    
-    Returns zones filtered by risk level and/or state, with privacy enforcement.
-    Suppressed zones are excluded from results.
-    """
     query = db.query(RiskZone)
-    
-    # Apply filters
+
     if risk_level and risk_level != RiskLevelEnum.ALL:
         query = query.filter(RiskZone.risk_level == risk_level.value)
-    
+
     if state:
         query = query.filter(RiskZone.state == state)
-    
-    # Exclude suppressed zones
+
     query = query.filter(RiskZone.is_suppressed == False)
-    
-    # Order by risk score descending
+
     query = query.order_by(RiskZone.risk_score.desc())
-    
-    # Limit results
+
     risk_zones = query.limit(limit).all()
-    
-    # Build response
+
     results = []
     for zone in risk_zones:
         response_data = {
@@ -66,27 +85,24 @@ async def get_risk_zones(
             "suppressed": zone.is_suppressed,
             "suppression_reason": zone.suppression_reason
         }
-        
-        # Additional privacy check
-        if privacy_enforcer.should_suppress(zone.population):
-            continue  # Skip this zone
-        
-        results.append(RiskZoneResponse(**response_data))
-    
-    return results
 
+        if privacy_enforcer.should_suppress(zone.population):
+            continue
+
+        results.append(RiskZoneResponse(**response_data))
+
+    return results
 
 @router.get("/risk-zones/{pincode}", response_model=RiskZoneResponse)
 async def get_risk_zone_by_pincode(
     pincode: str,
     db: Session = Depends(get_db)
 ):
-    """Get risk zone data for a specific pincode."""
     risk_zone = db.query(RiskZone).filter(RiskZone.pincode == pincode).first()
-    
+
     if not risk_zone:
         raise HTTPException(status_code=404, detail=f"Pincode {pincode} not found")
-    
+
     response_data = {
         "pincode": risk_zone.pincode,
         "district": risk_zone.district,
@@ -105,8 +121,7 @@ async def get_risk_zone_by_pincode(
         "suppressed": risk_zone.is_suppressed,
         "suppression_reason": risk_zone.suppression_reason
     }
-    
-    # Apply privacy enforcement
+
     if privacy_enforcer.should_suppress(risk_zone.population):
         response_data.update({
             "population": None,
@@ -115,5 +130,5 @@ async def get_risk_zone_by_pincode(
             "suppressed": True,
             "suppression_reason": f"Data suppressed for privacy (n<{privacy_enforcer.minimum_cell_size})"
         })
-    
+
     return RiskZoneResponse(**response_data)
