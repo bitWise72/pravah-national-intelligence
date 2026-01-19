@@ -71,3 +71,13 @@ export interface StateRisk {
     state: string;
     riskScore: number;
 }
+
+export interface Anomaly {
+    pincode: string;
+    district: string;
+    state: string;
+    anomaly_type: string;
+    severity: string;
+    description: string;
+}
+

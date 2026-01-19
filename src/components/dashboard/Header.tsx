@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Bell, Search, Calendar, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ModeIndicator } from '@/components/ModeIndicator';
 
 const Header = () => {
   const currentDate = new Date().toLocaleDateString('en-IN', {
@@ -40,6 +41,8 @@ const Header = () => {
           <Bell className="w-4 h-4" />
           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive animate-pulse" />
         </Button>
+
+        <ModeIndicator />
 
         <div className="flex items-center gap-3 pl-4 border-l border-border">
           <div className="text-right">

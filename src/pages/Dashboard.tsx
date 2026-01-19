@@ -21,6 +21,7 @@ import CensusApiPanel from '@/components/dashboard/CensusApiPanel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRiskZones, useAnomalies, useNationalStats } from '@/hooks/useApi';
 import { RiskZone, RiskZoneResponse, RiskDistribution, StateRisk, MigrationTrend } from '@/types';
+import { DummyModeBanner } from '@/components/ModeIndicator';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -314,6 +315,7 @@ const Dashboard = () => {
 
       <main className="ml-64">
         <Header />
+        <DummyModeBanner />
         <div className="p-6">
           {renderContent()}
         </div>
