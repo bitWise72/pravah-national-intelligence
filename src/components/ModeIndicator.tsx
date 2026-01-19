@@ -86,7 +86,7 @@ export const DummyModeBanner = () => {
                         onClick={() => setIsDismissed(true)}
                         className="text-warning-foreground/70 hover:text-warning-foreground transition-colors"
                     >
-                        
+                        ✕
                     </button>
                 </div>
             </div>

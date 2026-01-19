@@ -113,7 +113,7 @@ const CensusApiPanel = () => {
 
         <div className="mt-6 flex items-center gap-4">
           <code className="px-4 py-2 bg-secondary rounded-lg text-sm font-mono text-foreground">
-            Base URL: <span className="text-muted-foreground">{import.meta.env.VITE_API_BASE_URL || 'http:
+            Base URL: <span className="text-muted-foreground">{import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}</span>
           </code>
           <Button variant="outline" size="sm" className="gap-2">
             <ExternalLink className="w-4 h-4" aria-hidden="true" />
