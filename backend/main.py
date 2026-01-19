@@ -26,8 +26,6 @@ async def lifespan(app: FastAPI):
     yield
     logger.info("Shutting down PRAVAH Backend API...")
 
-
-
 app = FastAPI(
     title="PRAVAH API",
     description="Census-as-a-Service: Privacy-Preserving Demographic Intelligence",

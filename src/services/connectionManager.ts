@@ -14,7 +14,7 @@ class ConnectionManager {
 
     async checkConnection(): Promise<ConnectionMode> {
         try {
-            await axios.get('http://localhost:8000/health', { timeout: 3000 });
+            await axios.get('http:
             this.setMode(ConnectionMode.REAL);
             return ConnectionMode.REAL;
         } catch (error) {
@@ -42,7 +42,6 @@ class ConnectionManager {
 
 export const connectionManager = new ConnectionManager();
 
-// Enhanced API wrapper with fallback
 export const apiWithFallback = {
     async getRiskZones(riskLevel?: string, state?: string, limit: number = 100) {
         if (connectionManager.getMode() === ConnectionMode.REAL) {

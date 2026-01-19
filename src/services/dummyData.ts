@@ -1,6 +1,5 @@
 import { RiskZone, Anomaly } from '@/types';
 
-// Dummy data for fallback mode
 export const dummyRiskZones: Partial<RiskZone>[] = [
     {
         id: '1',

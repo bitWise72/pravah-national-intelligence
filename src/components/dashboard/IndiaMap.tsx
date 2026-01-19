@@ -25,7 +25,6 @@ const latLongToSvg = (lat: number, lng: number): { x: number; y: number } => {
   return { x, y };
 };
 
-// More detailed India boundary path
 const INDIA_PATH = `M 200 100
   C 230 80, 350 60, 420 85
   C 480 105, 520 130, 550 175
