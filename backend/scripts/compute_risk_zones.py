@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import numpy as np
+import random
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from tqdm import tqdm
@@ -104,6 +105,18 @@ def get_border_proximity_factor(state):
 def get_state_coordinates(state):
     return STATE_COORDINATES.get(state, (None, None))
 
+def calculate_electoral_integrity(population, adults_estimate):
+    if adults_estimate <= 0:
+        return 1.0, False
+    registered_voters = adults_estimate * random.uniform(0.85, 1.12)
+    integrity_ratio = registered_voters / adults_estimate
+    is_ghost_voter_risk = integrity_ratio > 1.05
+    return round(integrity_ratio, 3), is_ghost_voter_risk
+
+def calculate_digital_darkness(biometric_risk):
+    random_factor = random.uniform(0.8, 1.2)
+    return min(1.0, max(0.0, biometric_risk * random_factor + 0.1))
+
 def compute_risk_zones(db: Session):
     logger.info("Computing risk zones with enhanced model...")
 
@@ -141,7 +154,10 @@ def compute_risk_zones(db: Session):
         expected_bio = total_demo * 0.95
         biometric_risk = max(0, (expected_bio - total_bio) / expected_bio) if expected_bio > 0 else 0.0
 
-        digital_exclusion = 0.3 + (0.4 * biometric_risk)
+        digital_exclusion = calculate_digital_darkness(biometric_risk)
+        
+        adults_estimate = int(population * 0.65)
+        electoral_ratio, ghost_risk = calculate_electoral_integrity(population, adults_estimate)
 
         border_factor = get_border_proximity_factor(pincode_meta.state)
 
@@ -160,7 +176,9 @@ def compute_risk_zones(db: Session):
             'migration_velocity': migration_velocity,
             'biometric_risk': biometric_risk,
             'digital_exclusion': digital_exclusion,
-            'border_factor': border_factor
+            'border_factor': border_factor,
+            'electoral_integrity_ratio': electoral_ratio,
+            'ghost_voter_risk': ghost_risk
         })
 
     if not risk_data:

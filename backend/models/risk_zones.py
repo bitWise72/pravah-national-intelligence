@@ -35,6 +35,9 @@ class RiskZone(Base):
     anomaly_flag = Column(Boolean, default=False, index=True)
     anomaly_score = Column(Float)
 
+    electoral_integrity_ratio = Column(Float, default=1.0)
+    ghost_voter_risk = Column(Boolean, default=False)
+
     is_suppressed = Column(Boolean, default=False)
     suppression_reason = Column(String(200))
 

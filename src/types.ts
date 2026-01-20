@@ -12,6 +12,8 @@ export interface RiskZone {
     biometricRisk: number;
     digitalExclusion: number;
     anomalyFlag: boolean;
+    electoralIntegrityRatio?: number;
+    ghostVoterRisk?: boolean;
 }
 
 export interface RiskFactors {
@@ -33,6 +35,8 @@ export interface RiskZoneResponse {
     anomaly_flag: boolean;
     suppressed: boolean;
     suppression_reason?: string;
+    electoral_integrity_ratio?: number;
+    ghost_voter_risk?: boolean;
 }
 
 export interface NationalStats {
@@ -53,6 +57,8 @@ export interface NationalStats {
     anomalies: number;
     dataFreshness?: string;
     coveragePercent?: number;
+    ghostVoterZones?: number;
+    avgElectoralIntegrity?: number;
 }
 
 export interface MigrationTrend {

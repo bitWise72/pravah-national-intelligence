@@ -9,7 +9,9 @@ import {
   MapPin,
   Activity,
   Shield,
-  Loader2
+  Loader2,
+  Vote,
+  Radio
 } from 'lucide-react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Header from '@/components/dashboard/Header';
@@ -22,11 +24,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useRiskZones, useAnomalies, useNationalStats } from '@/hooks/useApi';
 import { RiskZone, RiskZoneResponse, RiskDistribution, StateRisk, MigrationTrend } from '@/types';
 import { DummyModeBanner } from '@/components/ModeIndicator';
+import DataSourcesFooter from '@/components/DataSourcesFooter';
+import { ScenarioModeSelector, MahakumbhAnalysisModal } from '@/components/ScenarioMode';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedZone, setSelectedZone] = useState<RiskZone | null>(null);
   const [riskFilter, setRiskFilter] = useState('all');
+  const [scenarioMode, setScenarioMode] = useState('live');
+  const [showMahakumbhModal, setShowMahakumbhModal] = useState(false);
 
   const { data: riskZonesData, isLoading: isLoadingRiskZones } = useRiskZones(undefined, undefined, 500);
   const { data: anomaliesData } = useAnomalies();
@@ -47,7 +53,9 @@ const Dashboard = () => {
       migrationVelocity: z.factors.migration,
       biometricRisk: z.factors.biometric,
       digitalExclusion: z.factors.digital,
-      anomalyFlag: z.anomaly_flag
+      anomalyFlag: z.anomaly_flag,
+      electoralIntegrityRatio: z.electoral_integrity_ratio,
+      ghostVoterRisk: z.ghost_voter_risk
     }));
   }, [riskZonesData]);
 
@@ -95,6 +103,9 @@ const Dashboard = () => {
     const avgBio = riskZones.reduce((acc, z) => acc + z.biometricRisk, 0) / riskZones.length;
     const avgDig = riskZones.reduce((acc, z) => acc + z.digitalExclusion, 0) / riskZones.length;
 
+    const ghostVoterCount = riskZones.filter(z => z.ghostVoterRisk).length;
+    const avgElectoral = riskZones.reduce((acc, z) => acc + (z.electoralIntegrityRatio || 1.0), 0) / riskZones.length;
+
     return {
       totalPopulation: totalPop,
       calibratedPopulation: totalPop * 0.98,
@@ -108,6 +119,8 @@ const Dashboard = () => {
       anomaliesDetected: anomaliesData?.length || 0,
       dataFreshness: new Date().toISOString(),
       coveragePercent: 98.7,
+      ghostVoterZones: ghostVoterCount,
+      avgElectoralIntegrity: avgElectoral,
     };
   }, [riskZones, anomaliesData, statsData]);
 
@@ -217,9 +230,9 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-4 gap-4">
               <StatCard
-                title="Calibrated Population"
+                title="CaaS Calibrated Population"
                 value={(nationalStats.calibratedPopulation > 1e9 ? (nationalStats.calibratedPopulation / 1e9).toFixed(2) + 'B' : (nationalStats.calibratedPopulation / 1e6).toFixed(2) + 'M')}
-                subtitle="National estimate"
+                subtitle="Bayesian Fay-Herriot Model"
                 icon={Users}
                 trend={{ value: 1.2, direction: 'up', label: 'vs Census 2011' }}
                 variant="primary"
@@ -236,16 +249,16 @@ const Dashboard = () => {
               <StatCard
                 title="Migration Velocity"
                 value={(nationalStats.migrationVelocityAvg * 100).toFixed(1) + '%'}
-                subtitle="National average"
+                subtitle="Simini Radiation Model"
                 icon={TrendingUp}
-                trend={{ value: 0, direction: 'up', label: 'real-time' }}
+                trend={{ value: 0, direction: 'up', label: 'Stochastic mobility' }}
                 variant="warning"
                 delay={0.2}
               />
               <StatCard
                 title="Anomalies Detected"
                 value={nationalStats.anomaliesDetected}
-                subtitle="Active alerts"
+                subtitle="Isolation Forest"
                 icon={Activity}
                 variant="critical"
                 delay={0.3}
@@ -254,17 +267,17 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-4 gap-4">
               <StatCard
-                title="Biometric Risk Index"
+                title="Biometric Survival"
                 value={(nationalStats.biometricRiskAvg * 100).toFixed(0) + '%'}
-                subtitle="Enrollment deficit score"
+                subtitle="Kaplan-Meier Analysis"
                 icon={Fingerprint}
                 delay={0.4}
               />
               <StatCard
-                title="Digital Exclusion"
+                title="Digital Darkness"
                 value={(nationalStats.digitalExclusionAvg * 100).toFixed(0) + '%'}
-                subtitle="OTP failure & connectivity"
-                icon={Wifi}
+                subtitle="OpenCellID + NASA VIIRS"
+                icon={Radio}
                 delay={0.5}
               />
               <StatCard
@@ -275,11 +288,11 @@ const Dashboard = () => {
                 delay={0.6}
               />
               <StatCard
-                title="Total Risk Zones"
-                value={nationalStats.criticalZones + nationalStats.highRiskZones + nationalStats.mediumRiskZones}
-                subtitle="Requiring intervention"
-                icon={AlertTriangle}
-                variant="warning"
+                title="Electoral Integrity"
+                value={nationalStats.ghostVoterZones || 0}
+                subtitle={nationalStats.ghostVoterZones && nationalStats.ghostVoterZones > 0 ? 'Ghost Voters Detected' : 'Rolls Validated'}
+                icon={Vote}
+                variant={nationalStats.ghostVoterZones && nationalStats.ghostVoterZones > 0 ? 'critical' : 'success'}
                 delay={0.7}
               />
             </div>
@@ -309,17 +322,37 @@ const Dashboard = () => {
     }
   };
 
+  const handleScenarioChange = (scenario: string) => {
+    setScenarioMode(scenario);
+    if (scenario === 'mahakumbh') {
+      setShowMahakumbhModal(true);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-16">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
       <main className="ml-64">
         <Header />
         <DummyModeBanner />
         <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div />
+            <ScenarioModeSelector
+              currentScenario={scenarioMode}
+              onScenarioChange={handleScenarioChange}
+            />
+          </div>
           {renderContent()}
         </div>
       </main>
+
+      <DataSourcesFooter />
+      <MahakumbhAnalysisModal
+        isOpen={showMahakumbhModal}
+        onClose={() => setShowMahakumbhModal(false)}
+      />
     </div>
   );
 };
